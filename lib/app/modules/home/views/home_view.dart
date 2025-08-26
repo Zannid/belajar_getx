@@ -28,6 +28,13 @@ class HomeView extends GetView<HomeController> {
             },
             child: Text('Go to Counter'),
           ),
+          FloatingActionButton(
+            heroTag: 'FormPendaftaran',
+            onPressed: () {
+              Get.toNamed('/form-pendaftaran');
+            },
+            child: Icon(Icons.app_registration),
+          )
         ],
       )),
     );
