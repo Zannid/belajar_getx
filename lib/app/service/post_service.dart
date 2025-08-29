@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
@@ -5,11 +6,12 @@ class PostService extends GetConnect {
   String? token;
   final box = GetStorage();
 
-  final String baseUrl = 'http://127.0.0.1:8000/api'; // simpan di field
+  final String base = 'http://127.0.0.1:8000/api';
 
   @override
   void onInit() {
-    httpClient.baseUrl = baseUrl;
+    httpClient.baseUrl = base;
+    httpClient.timeout = const Duration(seconds: 30);
     super.onInit();
   }
 
@@ -21,49 +23,62 @@ class PostService extends GetConnect {
     });
   }
 
-  // ambil semua post
+  Map<String, String> _headers() {
+    final tkn = box.read("token");
+    return {
+      "Accept": "application/json",
+      "Authorization": "Bearer $tkn",
+    };
+  }
+
+  /// ambil semua post
   Future<Response> fetchPosts() async {
     try {
-      final token = box.read("token");
-      return await get(
-        "/posts",
-        headers: {"Authorization": "Bearer $token"},
-      );
+      return await get("/posts", headers: _headers());
     } catch (e) {
       return Response(statusCode: 500, statusText: e.toString());
     }
   }
 
-  // tambah post baru
-  Future<Response> postPost(
-      String title, String content, String status, String foto) {
-    return post(
-      '/posts',
-      {
-        'title': title,
-        'content': content,
-        'status': status,
-        'foto': foto,
-      },
-    );
+  /// tambah post baru
+  Future<Response> createPost({
+    required String title,
+    required String content,
+    required int status,
+    File? foto,
+  }) async {
+    final form = FormData({
+      'title': title,
+      'content': content,
+      'status': status.toString(),
+      if (foto != null)
+        'foto': MultipartFile(foto, filename: foto.path.split('/').last),
+    });
+
+    return await post('/posts', form, headers: _headers());
   }
 
-  // update post
-  Future<Response> updatePost(
-      int id, String title, String content, String status, String foto) {
-    return put(
-      '/posts/$id',
-      {
-        'title': title,
-        'content': content,
-        'status': status,
-        'foto': foto,
-      },
-    );
+  /// update post
+  Future<Response> updatePost({
+    required int id,
+    required String title,
+    required String content,
+    required int status,
+    File? foto,
+  }) async {
+    final form = FormData({
+      'title': title,
+      'content': content,
+      'status': status.toString(),
+      if (foto != null)
+        'foto': MultipartFile(foto, filename: foto.path.split('/').last),
+    });
+
+    return await put('/posts/$id', form, headers: _headers());
   }
 
-  // hapus post
-  Future<Response> deletePost(int id) {
-    return delete('/posts/$id');
+  /// hapus post
+  Future<Response> deletePost(int id) async {
+    return await delete('/posts/$id', headers: _headers());
   }
 }

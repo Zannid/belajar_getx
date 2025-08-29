@@ -1,6 +1,6 @@
 import 'package:belajar_getx/app/data/models/post.dart';
 import 'package:belajar_getx/app/modules/Post/controllers/post_controller.dart';
-
+import 'package:belajar_getx/app/modules/Post/views/post_detail_view_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -85,6 +85,9 @@ class PostView extends GetView<PostController> {
             itemBuilder: (ctx, i) {
               final post = posts[i];
               return GestureDetector(
+                onTap: () {
+                  Get.to(() => PostDetailView(post: post));
+                },
                 child: Card(
                   elevation: 4,
                   margin: const EdgeInsets.only(bottom: 12),
@@ -176,7 +179,7 @@ class PostView extends GetView<PostController> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                post.content ?? '', // ✅ sesuaikan field
+                                post.content ?? '',
                                 maxLines: 3,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
